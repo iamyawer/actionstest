@@ -1,0 +1,36 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+name: Generate JSON file every minute during office hours
+
+on:
+  schedule:
+    # Runs every minute from 9-5 on weekdays in the Netherlands time zone
+    - cron: '*/1 8-16 * * 1-5'
+    # Sets the timezone to Europe/Amsterdam (Netherlands)
+    timezone: Europe/Amsterdam
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks out your repository so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a bash script that generates a JSON file or writes "yes"
+      - name: Generate JSON file during office hours
+        run: |
+          now=$(TZ=Europe/Amsterdam date +"%H:%M")
+          if [[ "$now" > "08:59" && "$now" < "17:01" ]]; then
+            echo '{"message": "Generated JSON file"}' > output.json
+          else
+            echo "yes" > output.txt
+          fi
+
+      # Uploads the generated file to the GitHub artifacts
+      - name: Upload generated file
+        uses: actions/upload-artifact@v2
+        with:
+          name: generated-file
+          path: output.*
